@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>无标题文档</title>
+<link href="css/indexcss.css" rel="stylesheet" />
+<script type="text/javascript" src="zepto.min.js"></script>
+<script>
+	
+	Object.extend = function(destination, source) {
+	    for (var property in source) {
+	        destination[property] = source[property];
+	    }
+	    return destination;
+	};
+
+
+
+	function rili(_this, options){
+		var that = this
+
+		var date =new Date();
+
+		that._this = _this;
+
+		//当前的日期
+		this.currentDate = _this.value.split('-');
+
+		that.options = {//默认值
+				container : $('#calendar'),
+	 		    SecondSelector:null,
+	 		    doubleCale:false,
+	            Year: date.getFullYear(),
+	            Month: date.getMonth() + 1,
+	            Day:date.getDate(),
+	            SelectDay: null,//选择日期 ,
+	            Holiday:[
+	            	{
+						name:"中秋",
+						date:["9-19"]
+					},
+					{
+						name:"国庆",
+						date:["10-1"]
+					},
+					{
+						name:"元旦",
+						date:["1-1"]	
+					}
+	            ], //假期
+	            WorkDay:[], //工作时间
+	            MarkDay:[],//特殊时间  
+	            MaxDate:null,//最大时间
+	            MinDate:null,//最小时间
+	           	ShowAgo:false, //日历往前显示 后面隐藏
+				caleNum:7, //日历 数量
+				
+				Weeks:["周日","周一","周二","周三","周四","周五","周六"],
+	           // Weeks:["Su","Mo","Tu","We","Th","Fr","Sa"],	
+	            //当天
+	            onSelectDay: function(cell){
+	                cell.addClass('active');
+	            },
+	            onFinish: function(){},
+	            callback: function(){},
+	        };
+
+
+		$.extend(this.options, options || {});
+
+		//清空已有数据
+		that.options.container.html('');
+
+		//调用方法
+		that.init();
+	};
+
+	rili.prototype = {
+		init : function(){
+			var that = this;
+			that.container = that.options.container;
+			that.Year = that.options.Year;
+			that.Month = that.options.Month;  // 月
+			that.Weeks = that.options.Weeks;  // 日
+			that.Day = that.options.Day;      // 天
+			that.SelectDay = that.currentDate ? that.currentDate : null; //当前的日期
+			that.onSelectDay = that.options.onSelectDay;     // 选择的日期
+			that.onFinish = that.options.onFinish;           //回调
+
+			//显示前几个月份的 时间
+			if(that.options.ShowAgo){
+				for(var i=0; i<that.options.caleNum; i++){
+					var date = new Date(that.Year,that.Month,1);
+					that.Year = date.getFullYear();
+					this.Month = date.getMonth();
+
+					//当前月份等于0
+					if(this.Month == 0){
+						this.Month = 12;
+						this.Year = that.Year -1;
+						this.Draw();
+						this.Month--;
+					}
+				}
+			}
+			else{
+				for(var i=0; i<this.options.caleNum; i++){
+					var date = new Date(that.Year,that.Month,1);
+					that.Year = date.getFullYear();
+					this.Month = date.getMonth();
+
+					//当前月份等于0
+					if(this.Month == 0){
+						this.Month = 12;
+						this.Year = that.Year -1;
+					}
+
+					this.Draw();
+					this.Month++;
+				}
+			}
+		},
+		Draw : function(){
+			var that = this,
+				Year = that.options.Year,
+				Month = that.options.Month,
+				Day = that.options.Day,
+				//保存日期列表
+				arr = [];
+
+			//用当月第一天在一周中的日期值作为当月离第一天的天数
+			var firstDay = new Date(that.Year, that.Month-1, 1).getDay();
+			
+			for(var i=1; i<=firstDay; i++){
+				arr.push(' ');
+			}
+
+			//用当月最后一天在一个月中的日期值作为当月的天数
+			var monthDay = new Date(that.Year, that.Month, 0).getDate();
+
+			for(var i=1; i<=monthDay; i++){
+				arr.push(i);
+			}
+
+			var table = $('<table>');
+
+			var thead = '';
+			thead = '<thead><tr><td colSpan="7">'+that.Year+'年'+that.Month+'月</td></tr></thead>';
+
+			that.Days = [];
+
+			var tBody = $('<tbody>');
+			var weeks = '';
+			weeks += '<tr class="weeks">';
+
+			for(var i=0; i<that.Weeks.length; i++){
+				weeks += '<th>'+that.Weeks[i]+'</th>'; 
+			}
+	
+			weeks += '<tr>';
+			tBody.append(weeks);
+			table.append(thead);
+
+			while(arr.length > 0){
+				var days = $('<tr>');
+				days.addClass('days');
+
+				for(var i=1; i<=7; i++){
+					var cell = $('<td>');
+					cell.html('');
+
+					if(arr.length > 0){
+						var d = arr.shift();
+						cell.html(d);
+						
+						//当天数大于0
+						if(d > 0){
+			
+							that.addDate(cell, that.Year+'-'+(String(that.Month).length == 2 ? that.Month : '0'+that.Month)+'-'+(String(d).length == 2 ? d : '0'+d));
+							this.Days[d] = cell;
+
+							//判断之前的日期
+							if(this.options.ShowAgo){
+							
+								if(that.agoDate(new Date(that.Year,that.Month-1,d), new Date(Year,Month-1,Day))){
+
+									cell.on('click', function(){
+										that.Selected($(this),that);
+									});
+								}
+								else{
+									cell.addClass('disable');
+								}
+							}
+							//判断以后的日期
+							else{
+								if(that.agoDate(new Date(that.Year,that.Month-1,d), new Date(Year,Month-1,Day))){
+									cell.addClass('disable');
+								}
+								else{
+									cell.on('click', function(){
+										that.Selected($(this),that);
+									});
+								}
+							}
+
+							//判断是否是周末
+							that.isWeek(cell, new Date(that.Year,that.Month-1,d));
+
+							//判断是否假期
+							that.ShowHoliday(cell, (that.Month+'-'+d));
+
+							//获取今日
+							if(that.IsSame(new Date(that.Year,that.Month-1,d), new Date())){
+								cell.html('今天');
+								that.onSelectDay(cell);
+
+								cell.on('click', function(){
+									that.Selected($(this),that);
+								});
+							}
+
+							//判断用户是否作了选择
+							if(that.IsSame(new Date(that.Year,that.Month-1,d), new Date(that.SelectDay[0],+that.SelectDay[1]-1,that.SelectDay[2]))){
+								that.onSelectDay(cell);	
+							}
+						}
+						else{
+							cell.addClass('disable');
+						}
+					}
+					else{
+						cell.addClass('disable');
+					}
+					days.append(cell);	
+				}
+
+				tBody.append(days);
+				table.append(tBody);
+			}
+
+			that.container.append(table);
+		},
+		//判断是否是周末
+		isWeek : function(cell,date){
+			var week = date.getDay();
+
+			if(week == 0 || week == 6){
+				cell.addClass('weekday');
+			}
+		},
+		//判断是否假期
+		ShowHoliday : function(cell, date){
+			for(var i=0; i<this.options.Holiday.length; i++){
+				if(this.options.Holiday[i].date == date){
+					cell.addClass('holiday');
+					cell.html(cell.html()+'<p>'+this.options.Holiday[i].name+'</p>');
+					return;
+				}
+			}
+		},
+		//是否当前时间
+		IsSame : function(d1, d2){
+			return (d1.getFullYear() == d2.getFullYear() && d1.getMonth() == d2.getMonth() && d1.getDate() == d2.getDate())
+		},
+		//添加自定义日期
+		addDate : function(cell,date){
+			cell.data('date', date);
+		},
+		//判断时间
+		agoDate : function(d1,d2){
+			return d1.getTime() <= d2.getTime();
+		},
+		//选中状态
+		Selected : function(cell,that){
+			var SelDate = cell.data('date'),
+				that = this;
+
+			this._this.value = SelDate;
+
+			if(that.options.doubleCale) that.options.callback();
+			history.back();
+			that.onFinish();
+		}	
+	};
+
+	function cale(_this){
+		return new rili(_this, arguments);
+	};
+</script>
+</head>
+
+<body>
+<input type="text" value="" onfocus="cale(this)" />
+<!-- 日历 -->
+
+<div id="calendar"></div>
+
+<!-- 日历end -->
+</body>
+</html>

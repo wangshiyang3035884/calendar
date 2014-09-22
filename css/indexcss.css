@@ -1,0 +1,38 @@
+@charset "utf-8";
+
+
+/*日历 start*/
+
+#calendar { margin: 15px 10px 15px 10px;}
+#calendar table {width: 100%; margin-bottom: 10px;border-collapse:collapse;font-weight: bolder;}
+#calendar  thead td {height: 44px;color:#0A69C4;text-align: center; font-size: 18px;  line-height: 44px; font-weight: bold; background: url(../imgs/rilibg.gif);border-top-left-radius: 4px; border-top-right-radius: 4px; }
+#calendar .weeks { font-size: 12px; height: 16px; color: #454545; background-color: #d0d0d0;text-align: center;border-top: 2px solid #bababa; border-bottom: 1px solid #bbbbbb;}
+
+#calendar .weeks th {
+	font-weight: normal;
+    text-align: center;
+}
+#calendar .weeks th:first-child,#calendar .weeks th:last-child{color:#0A69C4}
+#calendar .days {
+    font-size: 14px;
+    color: #454545;
+}
+#calendar .days td:first-child, #calendar .days td:last-child{ background-color: #eeefef;}
+
+#calendar .days td {
+    background: #fff;
+    color: #454545;
+    text-align: center;
+}
+
+#calendar tbody {border-top-width: 0;}
+#calendar tbody tr:last-child td:first-child,#calendar tbody tr:last-child td:last-child{border-bottom-left-radius: 4px;}
+#calendar td {position: relative; height: 44px; width: 44px;  font-size:18px; line-height: 42px;  vertical-align: top; box-shadow: inset -1px -1px 1px #ededed,inset 0 1px 1px #fff;}
+#calendar td.disable {color: #CCC; cursor: default;}
+#calendar td.active,#calendar  td.hover { background-color: #afd6f9 !important; color: #61B9EA;}
+#calendar th.weekend,#calendar td.weekend {color: #FF6600;}
+#calendar td.holiday {background: url(../imgs/icon_jia.png) no-repeat right bottom;background-size:18px 18px;}
+#calendar td.holiday p {position: absolute;	bottom:0;height: 16px;width:100%;font-weight: normal;font-size:10px;line-height: 16px;color:#0A69C4;}
+#calendar td.workday {background: #fff url(../imgs/icon_ban.png) no-repeat right bottom; background-size:18px 18px;}
+#calendar tbody td.null { background-color: #e3e3e3;}
+/*日历 end*/
